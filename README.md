@@ -17,7 +17,7 @@ L'applicazione permette di:
 - importare utenti da file CSV
 - salvare i dati su PostgreSQL
 
-Lo stack utilizzato e' composto da Java 21, Spring Boot, Spring Data JPA, PostgreSQL, Maven, Jakarta Validation, Docker e Swagger UI.
+Lo stack utilizzato e' composto da Java 21, Spring Boot, Spring Data JPA, PostgreSQL, Maven, Jakarta Validation, Docker, Swagger UI e Lombok.
 
 ## Modello dati
 
