@@ -1,4 +1,4 @@
-# User Management API
+# Esercizio CRUD
 
 Al primo avvio l'applicazione verifica la presenza della tabella `users` sul database. Se la tabella e' disponibile e il database risulta ancora vuoto, puo caricare automaticamente alcuni dati mock utili per fare prove veloci.
 
