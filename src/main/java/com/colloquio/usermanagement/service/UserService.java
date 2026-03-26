@@ -14,6 +14,7 @@ import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -25,6 +26,7 @@ import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -114,12 +116,44 @@ public class UserService {
             throw new InvalidCsvFileException("Il file CSV e' obbligatorio e non puo' essere vuoto");
         }
 
+        try (InputStream inputStream = file.getInputStream()) {
+            return importUsersFromInputStream(inputStream);
+        } catch (IOException exception) {
+            throw new InvalidCsvFileException("Errore durante la lettura del file CSV", exception);
+        }
+    }
+
+    public CsvImportResponse importUsersFromCsvResource(Resource resource) {
+        if (resource == null || !resource.exists()) {
+            throw new InvalidCsvFileException("File CSV mock non trovato");
+        }
+
+        try (InputStream inputStream = resource.getInputStream()) {
+            return importUsersFromInputStream(inputStream);
+        } catch (IOException exception) {
+            throw new InvalidCsvFileException("Errore durante la lettura del file CSV mock", exception);
+        }
+    }
+
+    private User findUserById(Long id) {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Utente con id " + id + " non trovato"));
+    }
+
+    private User saveUser(User user) {
+        try {
+            return userRepository.save(user);
+        } catch (DataIntegrityViolationException exception) {
+            throw new DuplicateEmailException("Esiste gia' un utente con email " + user.getEmail());
+        }
+    }
+
+    private CsvImportResponse importUsersFromInputStream(InputStream inputStream) throws IOException {
         List<CsvImportError> discardedRows = new ArrayList<>();
         int importedCount = 0;
         Set<String> processedEmails = new LinkedHashSet<>();
 
-        try (BufferedReader reader = new BufferedReader(
-                new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8));
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
              CSVParser parser = CSVFormat.DEFAULT.builder()
                      .setHeader()
                      .setSkipHeaderRecord(true)
@@ -162,24 +196,9 @@ public class UserService {
                     discardedRows.add(new CsvImportError(rowNumber, exception.getMessage()));
                 }
             }
-        } catch (IOException exception) {
-            throw new InvalidCsvFileException("Errore durante la lettura del file CSV", exception);
         }
 
         return new CsvImportResponse(importedCount, discardedRows.size(), discardedRows);
-    }
-
-    private User findUserById(Long id) {
-        return userRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Utente con id " + id + " non trovato"));
-    }
-
-    private User saveUser(User user) {
-        try {
-            return userRepository.save(user);
-        } catch (DataIntegrityViolationException exception) {
-            throw new DuplicateEmailException("Esiste gia' un utente con email " + user.getEmail());
-        }
     }
 
     private List<String> validateCsvRow(UserRequest request) {

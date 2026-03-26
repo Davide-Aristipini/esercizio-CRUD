@@ -15,9 +15,9 @@ public class OpenApiConfig {
                 .info(new Info()
                         .title("User Management API")
                         .description("REST API per la gestione degli utenti e l'import da CSV")
-                        .version("1.0.0")
+                        .version("1.0.1")
                         .contact(new Contact()
                                 .name("Technical Exercise")
-                                .email("noreply@example.com")));
+                                .email("davidearistipini56@gmail.com")));
     }
 }
