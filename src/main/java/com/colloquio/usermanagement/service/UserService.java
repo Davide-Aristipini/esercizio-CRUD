@@ -22,6 +22,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import lombok.RequiredArgsConstructor;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
@@ -34,6 +35,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service
+@RequiredArgsConstructor
 public class UserService {
 
     private static final String HEADER_NOME = "nome";
@@ -45,12 +47,6 @@ public class UserService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final Validator validator;
-
-    public UserService(UserRepository userRepository, UserMapper userMapper, Validator validator) {
-        this.userRepository = userRepository;
-        this.userMapper = userMapper;
-        this.validator = validator;
-    }
 
     public UserResponse createUser(UserRequest request) {
         String normalizedEmail = normalizeEmail(request.email());
